@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="textColorFirst" format="color"/>
+    <attr name="main_item_background" format="color"/>
+</resources>
