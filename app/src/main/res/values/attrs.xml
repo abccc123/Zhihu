@@ -2,4 +2,7 @@
 <resources>
     <attr name="textColorFirst" format="color"/>
     <attr name="main_item_background" format="color"/>
+    <attr name="toolbar_Text_Color" format="color"/>
+    <attr name="toolbar_Background_Color" format="color"/>
+    <attr name="toolbar_Menu_Text_Color" format="color"/>
 </resources>

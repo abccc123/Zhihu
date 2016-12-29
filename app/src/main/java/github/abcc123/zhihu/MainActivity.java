@@ -11,6 +11,7 @@ import java.util.List;
 
 import github.abcc123.zhihu.adapter.NewsListAdapter;
 import github.abcc123.zhihu.bean.News;
+import github.abcc123.zhihu.bean.NewsDetail;
 import github.abcc123.zhihu.db.dao.NewDao;
 import github.abcc123.zhihu.network.RetrofitManager;
 import rx.android.schedulers.AndroidSchedulers;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         newsListAdapter=new NewsListAdapter(getApplicationContext(),stories);
         recyclerView.setAdapter(newsListAdapter);
+        recyclerView.addOnScrollListener(new RecyclerViewListener());
     }
     private void loadLatestNews(){
         RetrofitManager.builder().getLatestNews()
@@ -66,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
                             curDate = news.getDate();
                             Log.e("curDate",curDate);
                         }
+                        if (news.getStories().size()<8){
+                            loadBeforeNews(curDate);
+                        }
                     }
                 },new Action1<Throwable>(){
                     @Override
@@ -74,11 +79,34 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+    private void loadBeforeNews(String date) {
+        RetrofitManager.builder().getBeforeNews(date)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<News, News>() {
+                    @Override
+                    public News call(News newsList) {
+                        cacheAllDetail(newsList.getStories());
+                        return changeReadState(newsList);
+                    }
+                })
+                .subscribe(new Action1<News>() {
+                    @Override
+                    public void call(News newsList) {
+                        newsListAdapter.addData(newsList.getStories());
+                        curDate = newsList.getDate();
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                    }
+                });
+    }
     private void cacheAllDetail(List<News.StoriesBean> newsList) {
 //        if (NetUtil.isWifiConnected()) {
             for (News.StoriesBean news : newsList) {
                 Log.d("Cache news",": " + news.getId() + news.getTitle());
-                //cacheNewsDetail(news.getId());
+                cacheNewsDetail(news.getId());
             }
 //        }
     }
@@ -96,18 +124,36 @@ public class MainActivity extends AppCompatActivity {
         }
         return newsList;
     }
-//    private void cacheNewsDetail(int newsId) {
-//        RetrofitManager.builder().getNewsDetail(newsId)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(Schedulers.io())
-//                .subscribe(new Action1<NewsDetail>() {
-//                    @Override
-//                    public void call(NewsDetail newsDetail) {
-////                        ArrayList<String> imgList = getImgs(newsDetail.getBody());
-////                        for (String img : imgList) {
-////                            L.d("Cache img: " + img);
-////                        }
-//                    }
-//                });
-//    }
+    private void cacheNewsDetail(int newsId) {
+        RetrofitManager.builder().getNewsDetail(newsId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(new Action1<NewsDetail>() {
+                    @Override
+                    public void call(NewsDetail newsDetail) {
+//                        ArrayList<String> imgList = getImgs(newsDetail.getBody());
+//                        for (String img : imgList) {
+//                            L.d("Cache img: " + img);
+//                        }
+                    }
+                });
+    }
+    class RecyclerViewListener extends RecyclerView.OnScrollListener{
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
+            int totalItemCount = recyclerView.getAdapter().getItemCount();
+            int lastVisibleItemPosition = lm.findLastVisibleItemPosition();
+            int visibleItemCount = recyclerView.getChildCount();
+
+            if (newState == RecyclerView.SCROLL_STATE_IDLE
+                    && lastVisibleItemPosition == totalItemCount - 1
+                    && visibleItemCount > 0) {
+                //加载更多
+                loadBeforeNews(curDate);
+            }
+        }
+
+
+    }
 }

@@ -1,6 +1,7 @@
 package github.abcc123.zhihu.network;
 
 import github.abcc123.zhihu.bean.News;
+import github.abcc123.zhihu.bean.NewsDetail;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import rx.Observable;
@@ -19,5 +20,5 @@ public interface ZhihuService {
     Observable<News> getBeforeNews(@Path("date") String date);
 
     @GET("story/{id}")
-    Observable<News> getNewsDetail(@Path("id") int id);
+    Observable<NewsDetail> getNewsDetail(@Path("id") int id);
 }

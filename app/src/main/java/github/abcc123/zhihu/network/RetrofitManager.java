@@ -1,6 +1,7 @@
 package github.abcc123.zhihu.network;
 
 import github.abcc123.zhihu.bean.News;
+import github.abcc123.zhihu.bean.NewsDetail;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -36,7 +37,7 @@ public class RetrofitManager {
         return mZhihuService.getBeforeNews(date);
     }
 
-    public Observable<News> getNewsDetail(int id) {
+    public Observable<NewsDetail> getNewsDetail(int id) {
         return mZhihuService.getNewsDetail(id);
     }
 }
